@@ -1,0 +1,103 @@
+import UIKit
+import Photos
+import MobileCoreServices
+import AssetsLibrary
+class ViewController: UIViewController,UIImagePickerControllerDelegate,UIActionSheetDelegate,UINavigationControllerDelegate {
+var cameraPicker:UIImagePickerController! = nil
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.videoShow()
+        // Do any additional setup after loading the view.
+    }
+    func videoShow()
+    {
+        if let availableMediaTypes:Array = UIImagePickerController.availableMediaTypes(for: .camera)
+        { var canTakeVideo = false
+                for mediaType in availableMediaTypes
+                {
+                    if mediaType == (kUTTypeImage as String)
+                    {
+                        // 支持摄像
+                        canTakeVideo = true
+                        break;
+                    }
+                }
+                // 检查是否支持摄像
+                if (!canTakeVideo)
+                {
+                    print("sorry, capturing video is not supported.!!!");
+                    return;
+                }
+                
+                // 创建图像选取控制器
+                let videoPicker = UIImagePickerController()
+                // 设置图像选取控制器的来源模式为相机模式
+        videoPicker.sourceType = UIImagePickerController.SourceType.camera
+                // 设置图像选取控制器的类型为动态图像，即视频文件
+                videoPicker.mediaTypes = [kUTTypeMovie as String]
+                // 设置摄像图像品质
+        videoPicker.videoQuality = UIImagePickerController.QualityType.typeHigh
+                // 设置最长摄像时间
+                videoPicker.videoMaximumDuration = 30
+                // 允许用户进行编辑
+                videoPicker.allowsEditing = false
+                // 设置委托对象
+        videoPicker.delegate = self
+                // 以模式视图控制器的形式显示
+        self.present(videoPicker, animated: true, completion: nil)
+        }
+    }
+    private func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : AnyObject]) {
+           print("1 图片选择：\(info)")
+           
+           // 录像
+               // 获取媒体类型
+        let mediaType = info[UIImagePickerController.InfoKey.mediaType] as! String
+   // let mediaType = info[UIImagePickerController.InfoKey.mediaType]
+     
+                // 判断是静态图像还是视频
+                if mediaType == (kUTTypeImage as String)
+                {
+                
+                }
+                else if mediaType == (kUTTypeMovie as String)
+                {
+                    // 获取视频文件的url
+                    let mediaURL = info[UIImagePickerController.InfoKey.mediaURL] as! NSURL
+                    // 视频文件的地址
+                    let pathString = mediaURL.relativePath
+                    print("视频地址：\(String(describing: pathString))")
+
+                   
+                   // 创建ALAssetsLibrary对象并将视频保存到媒体库（注意添加frame：AssetsLibrary）
+                    
+                    //let assetslibrary = PHPhotoLibrary()  PHAssetChangeRequest
+                    let assetsLibrary = ALAssetsLibrary()
+                    
+                    assetsLibrary.writeVideoAtPath(toSavedPhotosAlbum: mediaURL as URL, completionBlock: {
+                       (assetURL:URL?, error:Error?) -> Void in
+                       if let errorTmp = error
+                       {
+                           print("保存失败：\(errorTmp)");
+                       }
+                       else
+                       {
+                           print("保存成功");
+                       }
+                   })
+               }
+    
+           
+           
+    
+        picker.dismiss(animated: true, completion: nil)
+   }
+       
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+           print("2 放弃图片选择")
+           
+           // 退出图片选择控制器
+    picker.dismiss(animated: true, completion: nil)
+    }
+}
+
